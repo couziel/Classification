@@ -66,8 +66,6 @@ int main( int argc, char* argv[] )
     Matx13d transPixel;
     Matx33d sigma;
     sigma.zeros();
-    Matx33d den1;
-    den1.all(1/(den-1));
 
     for (int i=0; i<image.rows;i++)
         for (int j=0; j<image.cols; j++)
@@ -89,9 +87,10 @@ int main( int argc, char* argv[] )
         }
 
     //prob
-    std::vector<double> prob;
+    //std::vector<double> prob;
     Matx33d invSigma;
     double proba=0;
+    cv::Mat skin=cv::Mat::zeros(image.rows,image.cols,CV_8UC1);
 
     for (int i=0; i<image.rows;i++)
         for (int j=0; j<image.cols; j++)
@@ -102,8 +101,17 @@ int main( int argc, char* argv[] )
             transPixel=pixel.t();
             invSigma=sigma.inv();
             proba=(transPixel*invSigma*pixel)(0);
-            prob.push_back(exp(-proba/2)/(2*CV_PI*pow(cv::determinant(sigma),1/2)));
+            proba=exp(-proba/2)/(2*CV_PI*pow(cv::determinant(sigma),1/2));
+            if(proba<0.0025 && proba<0.0075)
+            {
+                skin.at<float>(i,j)=255;
+            }
+            //std::cout<<proba<<std::endl;
+            //prob.push_back(exp(-proba/2)/(2*CV_PI*pow(cv::determinant(sigma),1/2)));
         }
+    cv::namedWindow( argv[1], CV_WINDOW_AUTOSIZE );
+    cv::imshow( argv[1], skin );
+    cv::waitKey(0);
 
 
     return 0;

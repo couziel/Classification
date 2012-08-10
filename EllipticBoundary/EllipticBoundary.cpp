@@ -44,7 +44,7 @@ int main( int argc, char* argv[] )
     //n and fi
     int n=0;
     int flag=0;
-    std::vector<double> temp;
+    std::vector<double> temp(3);
     std::map<std::vector<double>, int> pixel;
     std::map<std::vector<double>, int>::iterator it;
 
@@ -125,8 +125,6 @@ int main( int argc, char* argv[] )
     Matx31d vectColor;
     Matx13d tranVectColor;
     Matx33d fi;
-    Matx33d den;
-    den.all(1/N);
 
     for (int i=0; i<image.rows;i++)
         for (int j=0; j<image.cols; j++)
@@ -136,60 +134,49 @@ int main( int argc, char* argv[] )
                 temp.at(0)=image.at<cv::Vec3b>(i,j)[0];
                 temp.at(1)=image.at<cv::Vec3b>(i,j)[1];
                 temp.at(2)=image.at<cv::Vec3b>(i,j)[2];
-                fi.all(pixel.find(temp)->second);
-                vectColor(0)=image.at<cv::Vec3b>(i,j)[0];
-                vectColor(1)=image.at<cv::Vec3b>(i,j)[1];
-                vectColor(2)=image.at<cv::Vec3b>(i,j)[2];
+                vectColor(0)=image.at<cv::Vec3b>(i,j)[0]-mu(0);
+                vectColor(1)=image.at<cv::Vec3b>(i,j)[1]-mu(1);
+                vectColor(2)=image.at<cv::Vec3b>(i,j)[2]-mu(2);
                 tranVectColor=vectColor.t();
-                lambda+=(vectColor*tranVectColor).mul(fi);
+                fi=vectColor*tranVectColor;
+                for(int x=0;x<3;x++)
+                    for(int y=0;y<3;y++)
+                    {
+                        fi(x,y)*=pixel.find(temp)->second;
+                    }
+                lambda+=fi;
             }
         }
-    lambda=lambda.mul(den);
-
- /*   //Sigma
-    Matx31d pixel;
-    Matx13d transPixel;
-    Matx33d sigma;
-    sigma.zeros();
-    Matx33d den1;
-    den1.all(1/(den-1));
-
-    for (int i=0; i<image.rows;i++)
-        for (int j=0; j<image.cols; j++)
+    for(int x=0;x<3;x++)
+        for(int y=0;y<3;y++)
         {
-            if(mask.at<float>(i,j)!=0)
-            {
-                pixel(0)=image.at<cv::Vec3b>(i,j)[0]-mu(0);
-                pixel(1)=image.at<cv::Vec3b>(i,j)[1]-mu(1);
-                pixel(2)=image.at<cv::Vec3b>(i,j)[2]-mu(2);
-                transPixel=pixel.t();
-                sigma+=pixel*transPixel;
-            }
+            lambda(x,y)/=N;
         }
 
-    for(int i=0;i<3;i++)
-        for (int j=0;j<3;j++)
-        {
-            sigma (i,j)/=den-1;
-        }
 
-    //prob
-    std::vector<double> prob;
-    Matx33d invSigma;
+    //Phi
+    Matx33d invLambda;
     double proba=0;
+    cv::Mat skin=cv::Mat::zeros(image.rows,image.cols,CV_8UC1);
 
     for (int i=0; i<image.rows;i++)
         for (int j=0; j<image.cols; j++)
         {
-            pixel(0)=image.at<cv::Vec3b>(i,j)[0]-mu(0);
-            pixel(1)=image.at<cv::Vec3b>(i,j)[1]-mu(1);
-            pixel(2)=image.at<cv::Vec3b>(i,j)[2]-mu(2);
-            transPixel=pixel.t();
-            invSigma=sigma.inv();
-            proba=(transPixel*invSigma*pixel)(0);
-            prob.push_back(exp(-proba/2)/(2*CV_PI*pow(cv::determinant(sigma),1/2)));
+            vectColor(0)=image.at<cv::Vec3b>(i,j)[0]-phi(0);
+            vectColor(1)=image.at<cv::Vec3b>(i,j)[1]-phi(1);
+            vectColor(2)=image.at<cv::Vec3b>(i,j)[2]-phi(2);
+            tranVectColor=vectColor.t();
+            invLambda=lambda.inv();
+            proba=(tranVectColor*invLambda*vectColor)(0);
+            if(proba>0.0025 &&proba<0.0075)
+            {
+                skin.at<float>(i,j)=255;
+            }
+            //std::cout<<proba<<std::endl;
         }
-*/
+    cv::namedWindow( argv[1], CV_WINDOW_AUTOSIZE );
+    cv::imshow( argv[1], skin );;
+    cv::waitKey(0);
 
     return 0;
 }

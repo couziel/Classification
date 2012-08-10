@@ -166,6 +166,9 @@ int main( int argc, char* argv[] )
           {
           return EXIT_FAILURE;
           }
+       /* //if .mat file
+        import scipy.io
+        mask = scipy.io.loadmat(argv[2])*/
     }
 
     int minRange, maxRange;
