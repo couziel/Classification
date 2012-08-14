@@ -87,8 +87,7 @@ int main( int argc, char* argv[] )
         }
 
     //prob
-    //std::vector<double> prob;
-    Matx33d invSigma;
+    Matx33d invSigma=sigma.inv();
     double proba=0;
     cv::Mat skin=cv::Mat::zeros(image.rows,image.cols,CV_8UC1);
 
@@ -99,15 +98,13 @@ int main( int argc, char* argv[] )
             pixel(1)=image.at<cv::Vec3b>(i,j)[1]-mu(1);
             pixel(2)=image.at<cv::Vec3b>(i,j)[2]-mu(2);
             transPixel=pixel.t();
-            invSigma=sigma.inv();
             proba=(transPixel*invSigma*pixel)(0);
             proba=exp(-proba/2)/(2*CV_PI*pow(cv::determinant(sigma),1/2));
-            if(proba<0.0025 && proba<0.0075)
+            if(proba<0.015 && proba<0.025)
             {
                 skin.at<float>(i,j)=255;
             }
-            //std::cout<<proba<<std::endl;
-            //prob.push_back(exp(-proba/2)/(2*CV_PI*pow(cv::determinant(sigma),1/2)));
+           // std::cout<<proba<<std::endl;
         }
     cv::namedWindow( argv[1], CV_WINDOW_AUTOSIZE );
     cv::imshow( argv[1], skin );
