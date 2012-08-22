@@ -110,7 +110,7 @@ int main( int argc, char* argv[] )
          }
     }
     cv::namedWindow( argv[1], CV_WINDOW_NORMAL );
-    cv::imshow( argv[1], skin );;
+    cv::imshow( argv[1], skin );
     cv::waitKey(0);
 
     imwrite(argv[2],skin);
