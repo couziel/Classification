@@ -27,7 +27,6 @@ int main( int argc, char* argv[] )
     if (strcmp(argv[4],"YCrCb")==0)
     {
        cv::cvtColor( target, target, CV_BGR2YCrCb );
-       target.convertTo(target,CV_32F,1.0/255.0);
     }
     else if (strcmp(argv[4],"HSV")==0 )
     {

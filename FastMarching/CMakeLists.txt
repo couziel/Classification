@@ -1,0 +1,37 @@
+project( FastMarching )
+#itk_module_test()
+
+set(ITKFastMarchingTests
+itkFastMarchingExtensionImageFilterTest.cxx
+itkFastMarchingTest.cxx
+itkFastMarchingTest2.cxx
+itkFastMarchingUpwindGradientTest.cxx
+# New files
+itkFastMarchingBaseTest.cxx
+itkFastMarchingImageFilterBaseTest.cxx
+itkFastMarchingImageFilterRealTest1.cxx
+itkFastMarchingImageFilterRealTest2.cxx
+itkFastMarchingImageFilterRealWithNumberOfElementsTest.cxx
+itkFastMarchingImageTopologicalTest.cxx
+itkFastMarchingQuadEdgeMeshFilterBaseTest2.cxx
+itkFastMarchingQuadEdgeMeshFilterBaseTest3.cxx
+itkFastMarchingQuadEdgeMeshFilterBaseTest4.cxx
+itkFastMarchingQuadEdgeMeshFilterBaseTest.cxx
+itkFastMarchingQuadEdgeMeshFilterWithNumberOfElementsTest.cxx
+itkFastMarchingStoppingCriterionBaseTest.cxx
+itkFastMarchingThresholdStoppingCriterionTest.cxx
+itkFastMarchingNumberOfElementsStoppingCriterionTest.cxx
+itkFastMarchingUpwindGradientBaseTest.cxx
+)
+
+
+cmake_minimum_required( VERSION 2.8 )
+
+find_package( OpenCV REQUIRED )
+
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+
+add_executable( FastMarching ${ITKFastMarching-Test_LIBRARIES} ${ITKFastMarchingTests} )
+target_link_libraries( FastMarching ${OpenCV_LIBS} )
+
+
