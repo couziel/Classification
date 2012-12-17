@@ -40,52 +40,89 @@ int main( int argc, char* argv[] )
    em_model.load(argv[2]);
    int N=em_model.getNClusters();
 
+   cv::Mat out=cv::Mat::zeros(target.rows,target.cols,CV_8UC1);
 
     Mat target_32f=target;
     Mat pr;
     Mat samp(1,3,CV_32FC1);
+    Mat weight(1,3,CV_32FC1);
 
-    for(int y=0;y<target.rows;y++) {
+    Vec2d res;
+    weight=em_model.getWeights();
+    for(int y=0;y<target.rows;y++)
+    {
         Vec3f* row = target_32f.ptr<Vec3f>(y);
-        //uchar* mask_row = mask.ptr<uchar>(y);
         for(int x=0;x<target.cols;x++)
         {
-                memcpy(samp.data,&(row[x][0]),3*sizeof(float));
-                em_model.predict(samp,&pr);
-
+                //memcpy(samp.data,&(row[x][0]),3*sizeof(float));
+            samp.at<Vec3f>(0,0) = row[x];
+//            samp.at<uchar>(0)=target_32f.at<Vec3b>(y,x)[0];
+//            samp.at<uchar>(1)=target_32f.at<Vec3b>(y,x)[1];
+//            samp.at<uchar>(2)=target_32f.at<Vec3b>(y,x)[2];
+                res=em_model.predict(samp,&pr);
+                //cout<<res(0)<<" "<<res(1)<<endl;
+              // cout<< em_model.getProbs()<<endl;
                 Mat samp_64f;
                 samp.convertTo(samp_64f,CV_64F);
+                float prob=0;
                 Mat Xnew(1,3,CV_64FC1,Scalar(0));
                 for(int i=0;i<N;i++)
                 {
-                    if(((float*)pr.data)[i] <= 0.25)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        Xnew+=(double)(((float*)pr.data)[i]);
-                    }
+//                    if(((float*)pr.data)[i] <= 0.25)
+//                    {
+//                        continue;
+//                    }
+//                    else
+//                    {
+//                    Xnew+=(double)(((float*)pr.data)[i]);
+//                    }
+                    prob+=static_cast<float>(pr.at<uchar>(i))*static_cast<float>(weight.at<uchar>(i));
+                }
+                //cout<<prob<<endl;
+                //cout<<out.at<float>(y,x)<<endl;
+                if (prob< 20000)
+                {out.at<uchar>(y,x)=255;}
 
-                Mat _tmp; Xnew.convertTo(_tmp,CV_32F);
-                memcpy(&(row[x][0]),_tmp.data,sizeof(float)*3);
 
-                if(target_32f.at<Vec3f>(y,x)[0]<0.95 && target_32f.at<Vec3f>(y,x)[1]<0.95 && target_32f.at<Vec3f>(y,x)[2]<0.95 )
+                //Mat _tmp; Xnew.convertTo(_tmp,CV_32F);
+               // memcpy(&(row[x][0]),_tmp.data,sizeof(float)*3);
+
+               /* if(target_32f.at<Vec3f>(y,x)[0]<0.95 && target_32f.at<Vec3f>(y,x)[1]<0.95 && target_32f.at<Vec3f>(y,x)[2]<0.95 )
                 {
                     target_32f.at<Vec3f>(y,x)[0]=0;
                     target_32f.at<Vec3f>(y,x)[1]=0;
                     target_32f.at<Vec3f>(y,x)[2]=0;
 
-                }
-            }
+                }*/
+
         }
     }
     cvtColor(target_32f,target_32f,CV_RGB2GRAY);
     target_32f.convertTo(target_32f,CV_8UC1,255.0/1.0);
+//    for(int y=0;y<target.rows;y++)
+//    {
+//        Vec3f* row = target_32f.ptr<Vec3f>(y);
+//        for(int x=0;x<target.cols;x++)
+//        {
+////            if (static_cast<float>(row[x][0])>200)
+////            {
+////                row[x][0]=static_cast<uchar>(0);
+////            }
+//            cout<<static_cast<float>(target_32f.at<uchar>(y,x))<<endl;
+////            if (static_cast<float>(target_32f.at<uchar>(y,x))>250)
+////            {
+////                target_32f.at<uchar>(y,x)=0;
+////            }
+//        }
+//    }
+//    for (int i=0;i<out.rows;i++)
+//        for (int j=0;j<out.cols;j++)
+//            cout<<static_cast<float>(out.at<uchar>(i,j))<<endl;
+
     namedWindow("EM-clustering result",CV_WINDOW_NORMAL);
-    imshow( "EM-clustering result", target_32f );
+    imshow( "EM-clustering result", out );
     waitKey(0);
 
-    imwrite(argv[3],target_32f);
+   // imwrite(argv[3],target_32f);
     return 0;
 }

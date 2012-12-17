@@ -276,13 +276,14 @@ int main( int argc, char* argv[] )
     cv::namedWindow( argv[1], CV_WINDOW_NORMAL );
     cv::imshow( argv[1], crop );
     cv::waitKey(0);
-    std::vector<cv::Mat> bg=Crop.Backgroung(img,eye,lips,nose);
+   /* std::vector<cv::Mat> bg=Crop.Backgroung(img,eye,lips,nose);
     for (int i=0;i<bg.size();i++)
     {
         cv::namedWindow( argv[1], CV_WINDOW_NORMAL );
         cv::imshow( argv[1], bg.at(i) );
         cv::waitKey(0);
-    }
+    }*/
+    imwrite(argv[2],crop);
     return 0;
 
 }
